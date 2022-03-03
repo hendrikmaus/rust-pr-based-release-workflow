@@ -35,6 +35,8 @@ And the rest would be automated. Now what the "rest" really is, depends heavily 
 
 - The GitHub Actions workflow runs on every merge to `main`
 - It looks at the latest commit message, e.g. `chore(main): release 1.6.0`
+  - or it uses `gh` to determine the pull-request by commit sha
+	  to then inspect the pull-request for a specific label
 - It can determine to release `1.6.0`
 - Now it could:
   - Compile all binaries
