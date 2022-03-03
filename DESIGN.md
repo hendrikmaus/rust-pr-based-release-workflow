@@ -2,7 +2,7 @@
 
 The abstract idea is to be able to create a pull-request, merge it, and that would automate the entire release process.
 
-_Please mind that this entire project focusses on Rust only._
+_Please mind that this entire project focusses on **Rust** only._
 
 ## Implementation
 
