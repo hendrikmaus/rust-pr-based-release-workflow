@@ -16,28 +16,41 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - id: release-detector
-        run: |
-          # trying to detect a release
-          msg=$(git log --oneline -n 1 "${GITHUB_SHA}")
-          echo "[INFO] processing: '${msg}'"
-          if [[ "${msg}" == *"release"* ]]; then
-            echo "[INFO] release detected"
-            echo "::set-output name=release-created::true"
-            exit 0
-          fi
-          echo "[INFO] no release detected"
-          echo "::set-output name=release-created::false"
-
       - uses: actions-rs/toolchain@v1
-        if: ${{ steps.release-detector.outputs.release-created == 'true' }}
         with:
           toolchain: stable
           override: true
           profile: minimal
 
       - uses: Swatinem/rust-cache@v1
-        if: ${{ steps.release-detector.outputs.release-created == 'true' }}
+        with:
+          key: release-rs
 
-      - if: ${{ steps.release-detector.outputs.release-created == 'true' }}
+      - id: release-detector
+        working-directory: release-rs
+        env:
+          RUST_LOG: debug
+        run: |
+          # trying to detect a release
+          cargo run
+
+          msg=$(git log --oneline -n 1 "${GITHUB_SHA}")
+          echo "[INFO] processing: '${msg}'"
+
+          if [[ "${msg}" != *"release"* ]]; then
+            echo "[INFO] no release detected"
+            echo "::set-output name=release-detected::false"
+            exit 0
+          fi
+
+          echo "[INFO] release detected"
+          pr=$(gh pr list --state merged --search $(git rev-parse HEAD) --limit 1 --json number,url,id,title)
+          echo "::set-output name=release-detected::true"
+
+      - uses: Swatinem/rust-cache@v1
+        if: ${{ steps.release-detector.outputs.release-detected == 'true' }}
+        with:
+          key: app
+
+      - if: ${{ steps.release-detector.outputs.release-detected == 'true' }}
         run: cargo build --release
