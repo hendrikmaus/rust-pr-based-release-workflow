@@ -24,6 +24,7 @@ jobs:
           if [[ "${msg}" == *"release"* ]]; then
             echo "[INFO] release detected"
             echo "::set-output name=release-created::true"
+            exit 0
           fi
           echo "[INFO] no release detected"
           echo "::set-output name=release-created::false"
