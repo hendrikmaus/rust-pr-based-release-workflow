@@ -72,6 +72,7 @@ fn main() -> anyhow::Result<()> {
         Some(_p) => {
             log::info!("detected release");
             // todo now we'd need to do additional parsing, e.g. get the tag to create
+            // todo for example this simple regex can pull the version from the commit: (v?\d+.\d+.\d+-?.*)
             Release::hit();
         }
         None => {
