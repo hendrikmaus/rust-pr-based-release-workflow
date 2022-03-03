@@ -16,13 +16,27 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - id: release-detector
+        run: |
+          # trying to detect a release
+          msg=$(git log --oneline -n 1 "${GITHUB_SHA}")
+          echo "[INFO] processing: '${msg}'"
+          if [[ "${msg}" == *"release"* ]]; then
+            echo "[INFO] release detected"
+            echo "::set-output name=release-created::true"
+          fi
+          echo "[INFO] no release detected"
+          echo "::set-output name=release-created::false"
+
       - uses: actions-rs/toolchain@v1
+        if: ${{ steps.release-detector.outputs.release-created }}
         with:
           toolchain: stable
           override: true
           profile: minimal
 
       - uses: Swatinem/rust-cache@v1
+        if: ${{ steps.release-detector.outputs.release-created }}
 
-      - run: cargo run
-        working-directory: release-rs
+      - if: ${{ steps.release-detector.outputs.release-created }}
+        run: cargo build --release
