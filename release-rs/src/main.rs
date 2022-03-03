@@ -52,17 +52,17 @@ fn main() -> anyhow::Result<()> {
     log::trace!("got commit sha from GITHUB_SHA: {sha}");
 
     let commit: String = cmd_lib::run_fun!(git log --oneline -n 1 "${sha}")?;
-    log::info!("found possible release commit:");
-    log::info!("\t{commit}");
 
     // assert, and exit early, if the current commit message does not carry the word 'release'
     // all release pull-requests will contain the word in their merge commit; however any commit
     // could and therefore this is just a very rough indicator.
     if !commit.contains("release") {
-        log::info!("commit doesn't contain the word 'release'");
+        log::info!("no release detected");
         Release::miss();
         return Ok(());
     }
+    log::info!("found possible release commit:");
+    log::info!("\t{commit}");
 
     // try and find the pull-request that the commit was part of to examine it
     // a release can only ever be triggered by a pull-request being merged
