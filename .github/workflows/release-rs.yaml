@@ -30,14 +30,14 @@ jobs:
           echo "::set-output name=release-created::false"
 
       - uses: actions-rs/toolchain@v1
-        if: ${{ steps.release-detector.outputs.release-created }}
+        if: ${{ steps.release-detector.outputs.release-created == 'true' }}
         with:
           toolchain: stable
           override: true
           profile: minimal
 
       - uses: Swatinem/rust-cache@v1
-        if: ${{ steps.release-detector.outputs.release-created }}
+        if: ${{ steps.release-detector.outputs.release-created == 'true' }}
 
-      - if: ${{ steps.release-detector.outputs.release-created }}
+      - if: ${{ steps.release-detector.outputs.release-created == 'true' }}
         run: cargo build --release
