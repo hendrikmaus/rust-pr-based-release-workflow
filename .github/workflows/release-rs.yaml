@@ -10,6 +10,9 @@ defaults:
   run:
     shell: bash
 
+env:
+  CARGO_TERM_COLOR: always
+
 jobs:
   release:
     runs-on: ubuntu-latest
