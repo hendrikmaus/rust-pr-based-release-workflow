@@ -27,7 +27,7 @@ jobs:
 
       - uses: Swatinem/rust-cache@v1
         with:
-          key: release-rs
+          key: release-rs-01
           working-directory: ./release-rs
 
       - id: release-detector
