@@ -3,7 +3,7 @@ use anyhow::Context;
 fn main() -> anyhow::Result<()> {
     env_logger::init();
 
-    let release_detected = false;
+    let mut release_detected = false;
 
     let start = std::time::Instant::now();
     log::trace!("starting release-rs process");
@@ -17,6 +17,9 @@ fn main() -> anyhow::Result<()> {
 
     if !commit.contains("release") {
         log::debug!("commit doesn't contain the word 'release'");
+    } else {
+        // todo set release detected for now without further investigation
+        release_detected = true;
     }
 
     // todo use `gh` to get the pull-request (if any) of the current commit
