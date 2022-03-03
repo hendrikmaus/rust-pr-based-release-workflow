@@ -34,6 +34,7 @@ jobs:
         working-directory: release-rs
         env:
           RUST_LOG: debug
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # trying to detect a release
           cargo run
