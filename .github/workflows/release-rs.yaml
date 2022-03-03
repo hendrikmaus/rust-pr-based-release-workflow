@@ -42,7 +42,9 @@ jobs:
       - uses: Swatinem/rust-cache@v1
         if: ${{ steps.release-detector.outputs.release-detected == 'true' }}
         with:
-          key: app
+          key: app-01
 
       - if: ${{ steps.release-detector.outputs.release-detected == 'true' }}
-        run: cargo build --release
+        run: |
+          # build app release binary
+          cargo build --release
