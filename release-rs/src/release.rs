@@ -39,7 +39,7 @@ impl Release {
         // try and find the pull-request that the commit was part of to examine it
         // a release can only ever be triggered by a pull-request being merged
         if GitHub::find_pull_request_by(sha, label)?.is_none() {
-            log::info!("could not match commit to a release pull-request");
+            log::debug!("could not match commit to a release pull-request");
             return self.miss();
         }
 
