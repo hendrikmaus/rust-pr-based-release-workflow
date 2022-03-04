@@ -30,7 +30,7 @@ jobs:
           key: release-rs-01
           working-directory: ./release-rs
 
-      - id: release-detector
+      - id: release-rs
         working-directory: release-rs
         env:
           RUST_LOG: debug
@@ -40,11 +40,16 @@ jobs:
           cargo run
 
       - uses: Swatinem/rust-cache@v1
-        if: ${{ steps.release-detector.outputs.release-detected == 'true' }}
+        if: ${{ steps.release-rs.outputs.release-detected == 'true' }}
         with:
           key: app-01
 
-      - if: ${{ steps.release-detector.outputs.release-detected == 'true' }}
+      - if: ${{ steps.release-rs.outputs.release-detected == 'true' }}
+        run: |
+          # tag name output
+          echo "${{ steps.release-rs.outputs.tag-name }}"
+
+      - if: ${{ steps.release-rs.outputs.release-detected == 'true' }}
         run: |
           # build of release binary
           cargo build --release
