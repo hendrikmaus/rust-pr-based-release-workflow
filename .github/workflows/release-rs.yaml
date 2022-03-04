@@ -54,7 +54,27 @@ jobs:
           # build of release binary
           cargo build --release
 
+      - if: ${{ steps.release-rs.outputs.release-detected == 'true' }}
+        id: data
+        run: |
+          # setting outputs for release updater step
+          echo "::set-output name=run_id::${GITHUB_RUN_ID}"
+          echo "::set-output name=server_url::${GITHUB_SERVER_URL}"
+          echo "::set-output name=repository::${GITHUB_REPOSITORY}"
+
+      - if: ${{ steps.release-rs.outputs.release-detected == 'true' }}
+        uses: softprops/action-gh-release@master
+        with:
+          tag_name: ${{ steps.release-rs.outputs.tag-name }}
+          name: ${{ steps.release-rs.outputs.tag-name }}
+          append_body: true
+          body: |
+            ---
+            <!-- UPDATES_START -->
+            #### Process Updates
+            * Processed by GitHub Actions run [`#${{ steps.data.outputs.run_id }}`](${{ format('{0}/{1}/actions/runs/{2}', steps.data.outputs.server_url, steps.data.outputs.repository, steps.data.outputs.run_id) }})
+            <!-- UPDATES_END -->
+
       # next steps could involve:
-      # - creation of github release (includes tag)
       # - upload of compiled binaries and checksums to the github release
       # - publishing to crates.io
