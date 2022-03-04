@@ -28,14 +28,13 @@ impl Release {
         let version = Regex::new(r"(v?\d+.\d+.\d+)")?
             .find_iter(&commit)
             .find(|m| semver::Version::parse(m.as_str()).is_ok());
-
         if version.is_none() {
             return self.miss();
         }
         let version = version.unwrap().as_str();
 
-        log::info!("found possible release commit:");
-        log::info!("  {commit}");
+        log::debug!("found possible release commit:");
+        log::debug!("  {commit}");
 
         // try and find the pull-request that the commit was part of to examine it
         // a release can only ever be triggered by a pull-request being merged
@@ -44,11 +43,11 @@ impl Release {
             return self.miss();
         }
 
-        log::info!("detected release of {version}");
         self.hit(version)
     }
 
     fn hit(&self, tag: &str) -> anyhow::Result<()> {
+        log::info!("detected release of {tag}");
         Actions::set_output("release-detected", "true");
         Actions::set_output("tag-name", tag);
         Ok(())

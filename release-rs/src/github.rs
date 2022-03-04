@@ -31,14 +31,8 @@ impl GitHub {
         let pulls: Vec<PullRequest> = serde_json::from_str(&pulls)?;
 
         if pulls.is_empty() {
-            log::trace!("the commit sha {sha} is not part of any pull-request");
+            log::debug!("the commit sha {sha} is not part of any pull-request");
             return Ok(None);
-        }
-
-        if pulls.len() != 1 {
-            anyhow::bail!(
-                "the commit is part of more than pull-request; cannot parse at this time"
-            );
         }
 
         let pr = pulls.first().unwrap().clone();
@@ -54,7 +48,7 @@ impl GitHub {
         let labels: Labels = serde_json::from_str(&labels)?;
 
         if labels.labels.is_empty() {
-            log::trace!(
+            log::debug!(
             "the commit sha {sha} is not part of any pull-request with the {marker_label} label"
         );
             return Ok(None);
@@ -75,6 +69,7 @@ pub struct Actions;
 impl Actions {
     // Set an "output" in GitHub Actions
     pub fn set_output(key: &str, value: &str) {
+        log::debug!("setting output name={key} value={value}");
         println!("::set-output name={key}::{value}");
     }
 }
