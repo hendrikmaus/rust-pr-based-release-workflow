@@ -40,18 +40,17 @@ impl Release {
 
         // try and find the pull-request that the commit was part of to examine it
         // a release can only ever be triggered by a pull-request being merged
-        let pr = GitHub::find_pull_request_by(sha, label)?;
-
-        if pr.is_none() {
+        if GitHub::find_pull_request_by(sha, label)?.is_none() {
             return self.miss();
         }
 
         log::info!("detected release of {version}");
-        self.hit()
+        self.hit(&version.to_string())
     }
 
-    fn hit(&self) -> anyhow::Result<()> {
+    fn hit(&self, tag: &str) -> anyhow::Result<()> {
         Actions::set_output("release-created", "true");
+        Actions::set_output("tag-name", tag);
         Ok(())
     }
 
