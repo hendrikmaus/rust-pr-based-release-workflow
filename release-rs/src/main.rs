@@ -1,15 +1,23 @@
 mod github;
 
 use crate::github::{Actions, GitHub};
-use anyhow::Context;
+
+use clap::Parser;
 
 // Name of the GitHub Actions output that following steps can read
 // todo make command line option with default value
 static OUTPUT_RELEASE_DETECTED: &str = "release-detected";
 
-// The name of the label to expect on release pull-requests
-// todo make command line option with default value
-static PULL_REQUEST_LABEL: &str = "autorelease";
+#[derive(Parser, Debug)]
+struct Cmd {
+    /// Commit sha to work on
+    #[clap(short, long, env = "GITHUB_SHA")]
+    sha: String,
+
+    /// Marker label to look for
+    #[clap(short, long, env = "RELEASE_LABEL", default_value = "autorelease")]
+    label: String,
+}
 
 struct Release;
 
@@ -24,13 +32,19 @@ impl Release {
 }
 
 fn main() -> anyhow::Result<()> {
+    let args = Cmd::parse();
+
+    std::env::set_var(
+        "RUST_LOG",
+        std::env::var("RUST_LOG").unwrap_or_else(|_| "info".to_string()),
+    );
+
     env_logger::init();
 
     let start = std::time::Instant::now();
     log::trace!("starting release-rs process");
 
-    let sha = std::env::var("GITHUB_SHA")
-        .context("Could not fetch GITHUB_SHA from the environment, is it set?")?;
+    let sha = &args.sha;
     log::trace!("got commit sha from GITHUB_SHA: {sha}");
 
     let commit: String = cmd_lib::run_fun!(git log --oneline -n 1 "${sha}")?;
@@ -48,7 +62,7 @@ fn main() -> anyhow::Result<()> {
 
     // try and find the pull-request that the commit was part of to examine it
     // a release can only ever be triggered by a pull-request being merged
-    let pr = GitHub::find_pull_request_by(&sha, PULL_REQUEST_LABEL)?;
+    let pr = GitHub::find_pull_request_by(sha, &args.label)?;
 
     match pr {
         Some(_p) => {

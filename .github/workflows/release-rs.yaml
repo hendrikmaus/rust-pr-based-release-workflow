@@ -36,7 +36,7 @@ jobs:
           RUST_LOG: debug
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # trying to detect a release
+          # release operator
           cargo run
 
       - uses: Swatinem/rust-cache@v1
@@ -46,5 +46,5 @@ jobs:
 
       - if: ${{ steps.release-detector.outputs.release-detected == 'true' }}
         run: |
-          # build app release binary
+          # build of release binary
           cargo build --release
