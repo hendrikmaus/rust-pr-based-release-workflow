@@ -27,25 +27,25 @@ impl Release {
         // release commits need to contain a semver version number
         let version = Regex::new(r"(v?\d+.\d+.\d+)")?
             .find_iter(&commit)
-            .map(|m| semver::Version::parse(m.as_str()).unwrap())
-            .next();
+            .find(|m| semver::Version::parse(m.as_str()).is_ok());
 
         if version.is_none() {
             return self.miss();
         }
+        let version = version.unwrap().as_str();
 
-        let version = version.unwrap();
         log::info!("found possible release commit:");
         log::info!("  {commit}");
 
         // try and find the pull-request that the commit was part of to examine it
         // a release can only ever be triggered by a pull-request being merged
         if GitHub::find_pull_request_by(sha, label)?.is_none() {
+            log::info!("could not match commit to a release pull-request");
             return self.miss();
         }
 
         log::info!("detected release of {version}");
-        self.hit(&version.to_string())
+        self.hit(version)
     }
 
     fn hit(&self, tag: &str) -> anyhow::Result<()> {
