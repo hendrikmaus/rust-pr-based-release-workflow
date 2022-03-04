@@ -48,3 +48,8 @@ jobs:
         run: |
           # build of release binary
           cargo build --release
+
+      # next steps could involve:
+      # - creation of github release (includes tag)
+      # - upload of compiled binaries and checksums to the github release
+      # - publishing to crates.io

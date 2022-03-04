@@ -1,4 +1,5 @@
 use crate::{Actions, GitHub};
+use regex::Regex;
 
 pub struct Release {
     sha: String,
@@ -20,10 +21,20 @@ impl Release {
         // all release pull-requests will contain the word in their merge commit; however any commit
         // could and therefore this is just a very rough indicator.
         if !commit.contains("release") {
-            log::info!("no release detected");
-            self.miss();
-            return Ok(());
+            return self.miss();
         }
+
+        // release commits need to contain a semver version number
+        let version = Regex::new(r"(v?\d+.\d+.\d+)")?
+            .find_iter(&commit)
+            .map(|m| semver::Version::parse(m.as_str()).unwrap())
+            .next();
+
+        if version.is_none() {
+            return self.miss();
+        }
+
+        let version = version.unwrap();
         log::info!("found possible release commit:");
         log::info!("  {commit}");
 
@@ -31,27 +42,22 @@ impl Release {
         // a release can only ever be triggered by a pull-request being merged
         let pr = GitHub::find_pull_request_by(sha, label)?;
 
-        match pr {
-            Some(_p) => {
-                log::info!("detected release");
-                // todo now we'd need to do additional parsing, e.g. get the tag to create
-                // todo for example this simple regex can pull the version from the commit: (v?\d+.\d+.\d+-?.*)
-                self.hit();
-            }
-            None => {
-                log::info!("commit could not be found in a release pull-request");
-                self.miss();
-            }
+        if pr.is_none() {
+            return self.miss();
         }
 
+        log::info!("detected release of {version}");
+        self.hit()
+    }
+
+    fn hit(&self) -> anyhow::Result<()> {
+        Actions::set_output("release-created", "true");
         Ok(())
     }
 
-    fn hit(&self) {
-        Actions::set_output("release-created", "true")
-    }
-
-    fn miss(&self) {
-        Actions::set_output("release-created", "false")
+    fn miss(&self) -> anyhow::Result<()> {
+        log::info!("no release detected");
+        Actions::set_output("release-created", "false");
+        Ok(())
     }
 }
