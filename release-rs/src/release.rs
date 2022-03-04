@@ -49,7 +49,7 @@ impl Release {
     }
 
     fn hit(&self, tag: &str) -> anyhow::Result<()> {
-        Actions::set_output("release-created", "true");
+        Actions::set_output("release-detected", "true");
         Actions::set_output("tag-name", tag);
         Ok(())
     }
